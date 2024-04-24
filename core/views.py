@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import Group, Permission
 from django.db import transaction, DatabaseError
 from django.core.exceptions import ValidationError
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from django.urls import reverse, NoReverseMatch
 from django.conf import settings
 from django.core.mail import EmailMessage, EmailMultiAlternatives
@@ -96,8 +96,12 @@ class MemberViewSet(viewsets.ModelViewSet):
             serializer.is_valid(raise_exception=True)
             self.perform_create(serializer)
             instance = serializer.instance
-            instance.set_password(
-                serializer.validated_data["password"])
+            random_password = instance.make_random_password(length=16,
+                                                            allowed_chars="abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVW"
+                                                                          "XYZ123456789!#$&'*.:=@_|")
+            # instance.set_password(
+            #     serializer.validated_data["password"])
+            instance.set_password(random_password)
             now = datetime.now()
             instance.last_login = now
             instance.email = email
@@ -109,6 +113,7 @@ class MemberViewSet(viewsets.ModelViewSet):
                 instance.full_name = full_name
             instance.save()
             data = serializer.validated_data
+            data['random_password'] = random_password
             profile = Profile(member=instance)
             try:
                 profile_serializer = ProfileCreateSerializer(profile, data=serializer.initial_data)

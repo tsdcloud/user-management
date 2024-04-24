@@ -9,13 +9,13 @@ from datetime import datetime, timedelta
 from django.db import models
 from django.db.models import Model
 from django.contrib.auth.models import AbstractUser, Permission, Group, Permission
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 
 from rest_framework_simplejwt.token_blacklist.models import OutstandingToken
 from rest_framework_simplejwt.models import TokenUser
 
-from core.constants import GENDER_CHOICES
+from core.constants import GENDER_CHOICES, NOTIFICATION_METHODS
 from core.utils import to_dict
 
 
@@ -61,8 +61,11 @@ class Profile(BaseUUIDModel, Model):
     verify = models.BooleanField(default=False, help_text=_("Ensure email or phone is verified"))
     phone = models.TextField(help_text=_("Phone"), editable=True)
     dob = models.DateField(blank=True, null=True, db_index=True, help_text=_("Date of birth"), editable=True)
-    logo = models.TextField(null=True)
+    photo = models.TextField(null=True, blank=True)
+    picture = models.FileField(upload_to="Uploads", null=True, blank=True)
     description = models.TextField(blank=True, null=True)
+    notification_method = models.CharField(max_length=150, choices=NOTIFICATION_METHODS, blank=True,
+                                           null=True, default="email")
 
     class Meta:
         permissions = [

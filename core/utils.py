@@ -5,7 +5,6 @@ from datetime import datetime, timedelta, date
 from django.db.models import F, Model
 from django.db.models.fields.files import ImageFieldFile as DjangoImageFieldFile, FieldFile, ImageFieldFile
 from rest_framework.authentication import TokenAuthentication
-# from rest_framework_simplejwt.authentication impor
 
 
 class BearerAuthentication(TokenAuthentication):

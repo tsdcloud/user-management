@@ -8,14 +8,14 @@ from core.models import Profile, Member
 
 class MemberSerializer(serializers.ModelSerializer):
     username = serializers.CharField(max_length=100, write_only=True)
-    password = serializers.CharField(max_length=100, write_only=True)
+    password = serializers.CharField(max_length=100, read_only=True, required=False)
     last_name = serializers.CharField(max_length=100, required=True)
     first_name = serializers.CharField(max_length=100, read_only=True)
     email = serializers.CharField(max_length=100, required=True)
 
     class Meta:
         model = Member
-        fields = ['username', 'password', 'first_name', 'last_name', 'email']
+        fields = ['username', 'first_name', 'last_name', 'email']
 
 
 class PermissionSerializer(serializers.ModelSerializer):

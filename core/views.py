@@ -110,8 +110,9 @@ class MemberViewSet(viewsets.ModelViewSet):
             self.perform_create(serializer)
             instance = serializer.instance
             if not serializer.validated_data["password"]:
-                instance.set_password(
-                    serializer.validated_data["password"])
+                confirm_password = request.POST.get("confirm_password", '')
+                if confirm_password != serializer.validated_data["password"]:
+                    instance.set_password(serializer.validated_data["password"])
             else:
                 random_password = instance.make_random_password(length=16,
                                                                 allowed_chars="abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRS"

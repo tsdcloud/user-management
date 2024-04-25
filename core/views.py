@@ -42,6 +42,19 @@ from core.serializers import ChangePasswordSerializer
 logger = logging.getLogger('user_management')
 
 
+def send_notification_email(subject: str, message: str, to: str, sender: str, bcc_recipient_list: list):
+    """
+    This function will send notification email to the available agent for process the request.
+    """
+    # project_name = ''
+    # domain = ''
+    # request_url = f"http://164.68.126.211:7000/requests/{request.id}/"
+    # photo_url = ''
+    msg = EmailMessage(subject, message, sender, [to], bcc_recipient_list)
+    msg.content_subtype = "html"
+    Thread(target=lambda m: m.send(), args=(msg,)).start()
+
+
 class MemberViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows users to be viewed or edited.
@@ -96,12 +109,20 @@ class MemberViewSet(viewsets.ModelViewSet):
             serializer.is_valid(raise_exception=True)
             self.perform_create(serializer)
             instance = serializer.instance
-            random_password = instance.make_random_password(length=16,
-                                                            allowed_chars="abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVW"
-                                                                          "XYZ123456789!#$&'*.:=@_|")
-            # instance.set_password(
-            #     serializer.validated_data["password"])
-            instance.set_password(random_password)
+            if not serializer.validated_data["password"]:
+                instance.set_password(
+                    serializer.validated_data["password"])
+            else:
+                random_password = instance.make_random_password(length=16,
+                                                                allowed_chars="abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRS"
+                                                                              "TUVWXYZ123456789!#$&'*.:=@_|")
+                instance.set_password(random_password)
+                if email:
+                    message = _("Votre nouveau mot de passe est <strong>%s</strong>" % random_password)
+                    subject = _("Mot de passe généré")
+                    sender = getattr(settings, "EMAIL_HOST_USER", "tsd@bfclimited.com")
+                    bcc_recipient_list = ['departementprojets@bfclimited.com']
+                    send_notification_email(subject, message, email, sender, bcc_recipient_list)
             now = datetime.now()
             instance.last_login = now
             instance.email = email
@@ -340,3 +361,5 @@ def password_reset_token_created(sender, instance, reset_password_token, *args, 
         msg.send()
     else:
         Thread(target=lambda m: m.send(), args=(msg, )).start()
+
+
